@@ -21,7 +21,7 @@ LIBS = -ldl -llttng-ust		# On Linux
 LOCAL_CPPFLAGS += -I.
 AM_V_P := :
 
-all: lttng-fork lttng-daemon lttng-clone lttng-forkpty
+all: lttng-fork lttng-daemon lttng-clone lttng-forkpty lttng-fork-inception
 
 lttng-fork: fork.o tp.o
 	@if $(AM_V_P); then set -x; else echo "  CCLD     $@"; fi; \
@@ -29,6 +29,16 @@ lttng-fork: fork.o tp.o
 		fork.o tp.o $(LIBS)
 
 fork.o: fork.c sample_component_provider.h
+	@if $(AM_V_P); then set -x; else echo "  CC       $@"; fi; \
+		$(CC) $(CPPFLAGS) $(LOCAL_CPPFLAGS) $(AM_CFLAGS) $(AM_CPPFLAGS) \
+		$(CFLAGS) -c -o $@ $<
+
+lttng-fork-inception: fork-inception.o tp.o lttng-fork
+	@if $(AM_V_P); then set -x; else echo "  CCLD     $@"; fi; \
+		$(CC) -o $@ $(LDFLAGS) $(AM_CFLAGS) $(AM_LDFLAGS) $(CFLAGS) \
+		fork-inception.o tp.o $(LIBS)
+
+fork-inception.o: fork-inception.c sample_component_provider.h
 	@if $(AM_V_P); then set -x; else echo "  CC       $@"; fi; \
 		$(CC) $(CPPFLAGS) $(LOCAL_CPPFLAGS) $(AM_CFLAGS) $(AM_CPPFLAGS) \
 		$(CFLAGS) -c -o $@ $<
@@ -80,4 +90,4 @@ html: sample_component_provider.html sample.html tp.html
 .PHONY: clean
 clean:
 	rm -f *.html
-	rm -f *.o lttng-fork lttng-daemon lttng-clone lttng-forkpty
+	rm -f *.o lttng-fork lttng-daemon lttng-clone lttng-forkpty lttng-fork-inception
